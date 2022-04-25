@@ -23,3 +23,13 @@ app.get('/talker', (_req, res) => {
     res.status(200).json(JSON.parse(data))
   ));
 });
+
+app.get('/talker/:id', (req, res) => {
+  const { id } = req.params;
+  fs.readFile('./talker.json', 'utf-8')
+  .then((data) => {
+    const talker = JSON.parse(data).find((r) => r.id === Number(id));
+    if (!talker) res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
+    return res.status(200).json(talker);
+  });
+});
