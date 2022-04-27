@@ -64,8 +64,8 @@ app.post('/talker',
   tokenValidation,
   validationName,
   validationAge,
-  validationRate,
   validationTalk,
+  validationRate,
   validationWatchAt,
   async (req, res) => {
   const { name, age, talk } = req.body;
