@@ -3,6 +3,16 @@ const fs = require('fs').promises;
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 
+const {
+  validateEmail,
+  validationName,
+  validationAge,
+  validationTalk,
+  validationRate,
+  validationWatchAt,
+  tokenValidation,
+} = require('./middleware/index');
+
 const app = express();
 app.use(bodyParser.json());
 
@@ -35,20 +45,6 @@ app.get('/talker/:id', (req, res) => {
   });
 });
 
-function validateEmail(req, res, next) {
-  const { email, password } = req.body;
-  const emailRegex = /[a-z0-9]+[@]+[a-z]+[.]+[a-z]/;
-  if (!email) return res.status(400).json({ message: 'O campo "email" é obrigatório' });
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
-  }
-  if (!password) return res.status(400).json({ message: 'O campo "password" é obrigatório' });
-  if (password.length < 6) {
-    return res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
-  }
-  next();
-}
-
 app.post('/login', validateEmail, (req, res) => {
   try {
     const { email, password } = req.body;
@@ -61,4 +57,22 @@ app.post('/login', validateEmail, (req, res) => {
   } catch (error) {
     return res.status(500).end();
   }
+});
+
+app.post('/talker',
+  tokenValidation,
+  validationName,
+  validationAge,
+  validationTalk,
+  validationRate,
+  validationWatchAt,
+  async (req, res) => {
+  const { name, age, talk } = req.body;
+  const talkerReadFile = await fs.readFile('./talker.json', 'utf-8').then((data) => data);
+  const result = JSON.parse(talkerReadFile);
+  const id = result.length + 1;
+  const obj = { id, name, age, talk };
+  const array = [...result, obj];
+  await fs.writeFile('./talker.json', JSON.stringify(array));
+  return res.status(201).json(obj);
 });
