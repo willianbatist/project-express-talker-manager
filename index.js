@@ -36,6 +36,14 @@ app.get('/talker', (_req, res) => {
   ));
 });
 
+app.get('/talker/search', tokenValidation, async (req, res) => {
+  const { q } = req.query;
+  const talkerReadFile = await fs.readFile('./talker.json', 'utf-8').then((data) => data);
+  const result = await JSON.parse(talkerReadFile);
+  const resultFilter = result.filter((r) => r.name.includes(q));
+  return res.status(200).json(resultFilter);
+});
+
 app.get('/talker/:id', (req, res) => {
   const { id } = req.params;
   fs.readFile(pathTalkerJson, 'utf-8')
