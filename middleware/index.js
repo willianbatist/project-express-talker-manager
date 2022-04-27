@@ -40,25 +40,16 @@ function validationAge(req, res, next) {
 
 function validationTalk(req, res, next) {
   const { talk } = req.body;
-  if (!talk) {
-    return res
-      .status(400)
-      .json({
-        message:
+  if (!talk || talk.rate === undefined || !talk.watchedAt) {
+    return res.status(400).json({ message:
           'O campo "talk" é obrigatório e "watchedAt" e "rate" não podem ser vazios',
       });
   }
-  next();
+  return next();
 }
 
 function validationRate(req, res, next) {
   const { talk: { rate } } = req.body;
-  if (!rate) {
-    return res.status(400).json({
-        message:
-          'O campo "talk" é obrigatório e "watchedAt" e "rate" não podem ser vazios',
-      });
-  }
   if (rate < 1) {
     return res
       .status(400)
@@ -75,14 +66,6 @@ function validationRate(req, res, next) {
 function validationWatchAt(req, res, next) {
   const { talk } = req.body;
   const validateRegex = /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/i;
-  if (!talk.watchedAt) {
-    return res
-      .status(400)
-      .json({
-        message:
-          'O campo "talk" é obrigatório e "watchedAt" e "rate" não podem ser vazios',
-      });
-  }
   if (!validateRegex.test(talk.watchedAt)) {
     return res
       .status(400)

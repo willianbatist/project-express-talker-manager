@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 
+const pathTalkerJson = './talker.json';
 const {
   validateEmail,
   validationName,
@@ -29,7 +30,7 @@ app.listen(PORT, () => {
 });
 
 app.get('/talker', (_req, res) => {
-  fs.readFile('./talker.json', 'utf-8')
+  fs.readFile(pathTalkerJson, 'utf-8')
   .then((data) => (
     res.status(200).json(JSON.parse(data))
   ));
@@ -37,7 +38,7 @@ app.get('/talker', (_req, res) => {
 
 app.get('/talker/:id', (req, res) => {
   const { id } = req.params;
-  fs.readFile('./talker.json', 'utf-8')
+  fs.readFile(pathTalkerJson, 'utf-8')
   .then((data) => {
     const talker = JSON.parse(data).find((r) => r.id === Number(id));
     if (!talker) res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
@@ -63,16 +64,38 @@ app.post('/talker',
   tokenValidation,
   validationName,
   validationAge,
-  validationTalk,
   validationRate,
+  validationTalk,
   validationWatchAt,
   async (req, res) => {
   const { name, age, talk } = req.body;
-  const talkerReadFile = await fs.readFile('./talker.json', 'utf-8').then((data) => data);
+  const talkerReadFile = await fs.readFile(pathTalkerJson, 'utf-8').then((data) => data);
   const result = JSON.parse(talkerReadFile);
   const id = result.length + 1;
   const obj = { id, name, age, talk };
   const array = [...result, obj];
-  await fs.writeFile('./talker.json', JSON.stringify(array));
+  await fs.writeFile(pathTalkerJson, JSON.stringify(array));
   return res.status(201).json(obj);
 });
+
+app.put('/talker/:id',
+  tokenValidation,
+  validationName,
+  validationAge,
+  validationTalk,
+  validationWatchAt,
+  validationRate,
+  async (req, res) => {
+  const { id } = req.params;
+  const { name, age, talk } = req.body;
+  const talkerReadFile = await fs.readFile('./talker.json', 'utf-8').then((data) => data);
+  const result = JSON.parse(talkerReadFile);
+  const resultIndex = result.find((r) => r.id === Number(id));
+  const obj = { id: Number(id), name, age, talk };
+  const array = [result[resultIndex] = { ...result[resultIndex], id: Number(id), name, age, talk }];
+  await fs.writeFile(pathTalkerJson, JSON.stringify(array));
+  return res.status(200).json(obj);
+});
+
+// {"age": 25, "id": 5, "name": "Zendaya", "talk": {"rate": 4, "watchedAt": "24/10/2020"}}
+// {"age": 25, "id": "5", "name": "Zendaya", "talk": {"rate": 4, "watchedAt": "24/10/2020"}}
