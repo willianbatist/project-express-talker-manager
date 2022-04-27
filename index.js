@@ -97,5 +97,12 @@ app.put('/talker/:id',
   return res.status(200).json(obj);
 });
 
-// {"age": 25, "id": 5, "name": "Zendaya", "talk": {"rate": 4, "watchedAt": "24/10/2020"}}
-// {"age": 25, "id": "5", "name": "Zendaya", "talk": {"rate": 4, "watchedAt": "24/10/2020"}}
+app.delete('/talker/:id', tokenValidation, async (req, res) => {
+  const { id } = req.params;
+  const talkerReadFile = await fs.readFile('./talker.json', 'utf-8').then((data) => data);
+  const result = JSON.parse(talkerReadFile);
+  const resultIndex = result.find((r) => r.id === Number(id));
+  const newData = result.splice(resultIndex, 1);
+  await fs.writeFile(pathTalkerJson, JSON.stringify(newData));
+  return res.status(204).end();
+});
